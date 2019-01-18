@@ -1,0 +1,168 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<link rel="stylesheet" href="/css/bootstrap-datetimepicker.min.css">
+
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+<script src="/js/moment.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+		<div>
+			<label>
+				客戶編號：<select id="customer-id"></select>
+			</label>
+		</div>
+		<div>
+			<label>
+				預約時間：<input type="text" id="reservation-time"></input>
+			</label>
+		</div>
+		<hr>
+        <thead>
+            <tr>
+                <th>商品編號</th>
+                <th>商品名稱</th>
+                <th>商品種類</th>
+                <th>單價</th>
+                <th>數量</th>
+                <th>小計</th>		
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: "/data/order/takeout/check",
+		table: "#example",
+		fields: [
+			{
+				label: "商品編號",
+				name: "product_id",
+				type: "select"
+			}, {
+				label: "數量",
+				name: "quantity",
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增商品"
+			},
+			edit: {
+				button: "修改",
+				title: "修改商品"
+			},
+			remove: {
+				button: "刪除"
+			}
+		},
+		idSrc: "id"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Brtp",
+			columns: [
+				{ data: 'product_std_id' },
+				{ data: 'product_name' },
+				{ data: 'product_type' },
+				{ data: 'product_price' },
+				{ data: 'quantity' },
+				{ data: 'total' },
+				{ data: 'product_id', visible: false },
+				{ data: 'id', visible: false }
+			],
+			select: true,
+			buttons: [
+				{
+					extend: "create", 
+					editor: editor
+				}, { 
+					extend: "edit", 
+					editor: editor
+				}, {
+					extend: "remove",
+					editor: editor
+				}, {
+					text: "送出",
+					action: function() {
+						var data = [];
+						datatable.data().map(function(row) {
+							data.push({
+								product_id: row.product_id,
+								quantity: row.quantity
+							});
+						});
+						var post = {
+							data: data,
+							customer_id: $('#customer-id').val(),
+							reservation_time: new Date($('#reservation-time').val()).format('Y-m-d H:i')
+						};
+						$.ajax({
+							type: 'POST',
+							url: '/data/order/takeout/create',
+							data: post,
+							dataType: 'json',
+							success: function(json) {
+								if (json.status == 'success') {
+									window.location = '/order/takeout';
+								}
+							},
+							error: function(xhr, error, thrown) {
+							}
+						})
+					}
+				}
+			]
+		} );
+	} );
+	
+	$.ajax({
+		type: 'GET',
+		url: '/data/product',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push({
+					label: row.std_id + ' (' + row.name + ')',
+					value: row.id
+				});
+			});
+			editor.field('product_id').update(options);
+		},
+		error: function() {
+		}
+	});
+	
+	$.ajax({
+		type: 'GET',
+		url: '/data/customer',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push('<option value="', row.id, '">', row.std_id, ' (', row.name, ')</option>');
+			});
+			$('#customer-id').html(options.join(''));
+		},
+		error: function() {
+		}
+	});
+	
+	$('#reservation-time').datetimepicker({
+		minDate: new Date()
+	});
+</script>

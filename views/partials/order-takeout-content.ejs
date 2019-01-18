@@ -1,0 +1,76 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>訂單編號</th>
+                <th>客戶編號</th>
+                <th>接單員</th>
+                <th>總金額</th>
+				<th>訂購時間</th>
+				<th>預約時間</th>
+				<th>處理狀態</th>				
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			remove: {
+				type: 'DELETE',
+				url: '/data/order/takeout/remove'
+			}
+		},
+		idSrc: "id",
+		table: "#example"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/order/takeout",
+			columns: [
+				{ "data": "link" },
+				{ "data": "customer_id" },
+				{ "data": "employee_id" },
+				{ "data": "total"},
+				{ "data": "order_time" },
+				{ "data": "reservation_time" },
+				{ "data": "status" },
+				{ "data": "std_id", visible: false },
+				{ "data": "id", visible: false }
+			],
+			select: true,
+			buttons: [
+				{
+					text: "新增", 
+					extend: "create", 
+					action: function() {
+						window.location = "/order/takeout/create";
+					}
+				}, { 
+					text: "修改",
+					extend: "edit", 
+					action: function() {
+					
+					}
+				}, {
+					text: "刪除",
+					extend: "remove",
+					editor: editor
+				}
+			]
+		} );
+	} );
+</script>

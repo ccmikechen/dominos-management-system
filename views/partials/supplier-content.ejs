@@ -1,0 +1,92 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>供應商編號</th>
+                <th>名稱</th>
+                <th>電話</th>
+                <th>地址</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/supplier/create'
+			},
+			edit: {
+				type: 'PUT',
+				url: '/data/supplier/edit'
+			},
+			remove: {
+				type: 'DELETE',
+				url: '/data/supplier/remove'
+			}
+		},
+		table: "#example",
+		fields: [
+			{
+				label: "名稱",
+				name: "name"
+			}, {
+				label: "電話",
+				name: "phone"
+			}, {
+				label: "地址",
+				name: "address"
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增供應商"
+			},
+			edit: {
+				button: "修改",
+				title: "修改供應商"
+			},
+			remove: {
+				button: "刪除"
+			}
+		},
+		idSrc: "id"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/supplier",
+			columns: [
+				{ data: "std_id" },
+				{ data: "name" },
+				{ data: "phone" },
+				{ data: "address" },
+				{ data: "id", visible: false }
+			],
+			select: true,
+			buttons: [
+				{ extend: "create", editor: editor }, 
+				{ extend: "edit", editor: editor }, 
+				{ extend: "remove", editor: editor }
+			]
+		} );
+	} );
+</script>

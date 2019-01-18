@@ -1,0 +1,146 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+		<div>
+			<label>
+				開單日期：<input type="text" id="order-date" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				開單人　：<input type="text" id="order-emp" disabled></input>
+			</label>
+		</div>
+		<hr>
+        <thead>
+            <tr>
+                <th>貨品編號</th>
+                <th>貨品名稱</th>
+                <th>進貨數量</th>
+                <th>進貨後庫存</th>
+				<th>單價</th>
+				<th>小計</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: "/data/purchase/check",
+		table: "#example",
+		fields: [
+			{
+				label: "原料編號",
+				name: "stock_id",
+				type: "select"
+			}, {
+				label: "進貨數量",
+				name: "quantity",
+			}, {
+				label: "單價",
+				name: "price"
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增原料"
+			},
+			edit: {
+				button: "修改",
+				title: "修改原料"
+			},
+			remove: {
+				button: "刪除"
+			}
+		},
+		idSrc: "id"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Brtp",
+			columns: [
+				{ data: 'stock_std_id' },
+				{ data: 'name' },
+				{ data: 'quantity'},
+				{ data: 'after' },
+				{ data: 'price' },
+				{ data: 'total' },
+				{ data: 'stock_id', visible: false },
+				{ data: 'id', visible: false }
+			],
+			select: true,
+			buttons: [
+				{
+					extend: "create", 
+					editor: editor
+				}, { 
+					extend: "edit", 
+					editor: editor
+				}, {
+					extend: "remove",
+					editor: editor
+				}, {
+					text: "送出",
+					action: function() {
+						var data = [];
+						datatable.data().map(function(row) {
+							data.push({
+								stock_id: row.stock_id,
+								price: row.price,
+								quantity: row.quantity
+							});
+						});
+						$.ajax({
+							type: 'POST',
+							url: '/data/purchase/create',
+							data: { data: data },
+							dataType: 'json',
+							success: function(json) {
+								if (json.status == 'success') {
+									window.location = '/stock/purchase';
+								}
+							},
+							error: function(xhr, error, thrown) {
+							}
+						});
+					}
+				}
+			]
+		} );
+	} );
+	
+	$('#order-date').val(new Date().format('Y-m-d'));
+	$('#order-emp').val('<%= employeeId %>');
+	$.ajax({
+		type: 'GET',
+		url: '/data/stock',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push({
+					label: row.std_id + ' (' + row.name + ')',
+					value: row.id
+				});
+			});
+			editor.field('stock_id').update(options);
+		},
+		error: function() {
+		}
+	});
+</script>

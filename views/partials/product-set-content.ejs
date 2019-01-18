@@ -1,0 +1,170 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<h2><%= title %></h2>
+<hr>
+<div class="container" style="width: 100%">
+	<div class="row">
+		<div class="col-sm-4">
+			<div>
+				<label>
+					套餐編號：<input type="text" id="set-meal-id" disabled></input>
+				</label>
+			</div>
+			<div>
+				<label>
+					套餐名稱：<input type="text" id="set-meal-name" disabled></input>
+				</label>
+			</div>		
+			<div>
+				<label>
+					價格　　：<input type="text" id="set-meal-price" disabled></input>
+				</label>
+			</div>
+		</div>
+		<div class="col-sm-8">
+			<div>
+				<label>商品圖片</label>
+			</div>
+			<div>
+				<img id="product-img" src="<%= imageUrl %>" 
+					onerror="if (this.src != '/images/no-image.gif') this.src = '/images/no-image.gif';"
+					style="width: 200px; height: 200px"></img>
+			</div>
+			<hr>
+			<div>
+				<label>圖片上傳</label>
+			</div>
+			<form action="/data/product/image/upload/<%= id %>" method="post" enctype="multipart/form-data">
+				<label>
+					<input type="file" name="path"></input>
+				</label>
+				<input type="submit" value="上傳"></input>
+			</form>
+		</div>
+	</div>
+</div>
+
+<hr>
+<table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>商品編號</th>
+                <th>商品名稱</th>
+                <th>數量</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/product/set/create'
+			},
+			edit: {
+				type: 'PUT',
+				url: '/data/product/set/edit'
+			},
+			remove: {
+				type: 'DELETE',
+				url: '/data/product/set/remove'
+			}
+		},
+		table: "#example",
+		fields: [
+			{
+				label: "商品編號",
+				name: "product_id",
+				type: "select"
+			}, {
+				label: "數量",
+				name: "quantity"
+			}, {
+				type: "hidden",
+				name: "set_meal_id"
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增商品"
+			},
+			edit: {
+				button: "修改",
+				title: "修改商品"
+			},
+			remove: {
+				button: "刪除",
+				title: "刪除商品"
+			}
+		},
+		idSrc: "id"
+	});
+
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/product/set?id=<%= id %>",
+			columns: [
+				{ data: 'product_std_id' },
+				{ data: 'name' },
+				{ data: 'quantity'},
+				{ data: 'id', visible: false },
+				{ data: 'product_id', visible: false },
+				{ data: 'set_meal_id', visible: false }
+			],
+			select: true,
+			buttons: [
+				{ extend: "create", editor: editor }, 
+				{ extend: "edit", editor: editor }, 
+				{ extend: "remove", editor: editor }
+			]
+		} );
+	} );
+	
+	$.ajax({
+		type: 'GET',
+		url: '/data/product/set/info',
+		data: { id: <%= id %> },
+		dataType: 'json',
+		success: function(json) {
+			var data = json.data[0];
+			$('#set-meal-id').val(data.std_id);
+			editor.field('set_meal_id').def(data.set_meal_id);
+			$('#set-meal-name').val(data.name);
+			$('#set-meal-price').val(data.price);
+		},
+		error: function() {
+		}
+	});
+	$.ajax({
+		type: 'GET',
+		url: '/data/product',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push({
+					label: row.std_id + ' (' + row.name + ')',
+					value: row.id
+				});
+			});
+			editor.field('product_id').update(options);
+		},
+		error: function() {
+		}
+	});
+</script>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>達美樂分店管理系統</title>
+<link rel="stylesheet" href="/css/login.css">
+</head>
+
+<body style="background-color: #EEEEEE">
+<div class="wrap" style="margin-top: 84.5px">
+	<div class="loginWrap">
+		<h1 class="logo"></h1>
+		<div class="loginWrapInner">
+			<div class="loginForm">
+				<form action="/auth/register" method="post" onsubmit="return verifyRegisterInfo();">
+					<div class="input-zone">
+						<input type="text" id="username" name="username" placeholder="帳號" maxlength="20" required></input>
+					</div>
+					<div class="input-zone" style="margin-top: 6px">
+						<input type="password" id="password" name="password" placeholder="密碼" required></input>
+					</div>
+					<div class="submit-zone" style="margin-top: 20px">
+						<input type="submit" class="submit-btn" value="註冊確認"></input>
+					</div>
+				</form>
+			</div>
+			<div class="optionForm">
+				<div style="width: 50%; text-align: left; float: left; margin-left: 10px;">
+					<h5 id="errorMessage" style="color: red"><%= errorMessage %></h5>
+				</div>
+				<div style="width: 50%; text-align: right; float: left; margin: 6px 0 0 -10px;">
+					<a href="/login">登入帳號</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+
+function verifyRegisterInfo() {
+	if ($('#username').val().length == 0) {
+		$('#errorMessage').html('帳號不可為空');
+		return false;
+	}
+	if ($('#username').val().length > 20) {
+		$('#errorMessage').html('帳號長度不可多於20個字元');
+		return false;
+	}
+	if ($('#password').val().length == 0) {
+		$('#errorMessage').html('密碼不可為空');
+		return false;
+	}
+	if ($('#password').val().length < 8) {
+		$('#errorMessage').html('密碼長度不可少於8個字元');
+		return false;
+	}
+	alert('hello');
+	return true;
+}
+
+</script>
+
+</body>
+
+</html>

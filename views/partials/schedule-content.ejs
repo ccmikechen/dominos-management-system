@@ -1,0 +1,76 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>amount</th>
+                <th>date</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/stock/create'
+			}
+		},
+		table: "#example",
+		fields: [{
+				label: "name",
+				name: "name"
+			}, {
+				label: "amount",
+				name: "amount"
+			}, {
+				label: "date",
+				name: "date",
+				type: "datetime",
+				def: function() { return new Date(); }
+			}
+		]
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/stock",
+			columns: [
+				{ "data": "id" },
+				{ "data": "name" },
+				{ "data": "amount" },
+				{ "data": "date"}
+			],
+			select: true,
+			buttons: [
+				{
+					text: "新增", 
+					extend: "create", 
+					editor: editor 
+				}, { 
+					text: "修改",
+					extend: "edit", 
+					editor: editor 
+				}, {
+					text: "刪除",
+					extend: "remove",
+					editor: editor
+				}
+			]
+		} );
+	} );
+</script>

@@ -1,0 +1,115 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>原料編號</th>
+                <th>名稱</th>
+                <th>存貨數量</th>
+                <th>供應商</th>
+				<th>最後盤點日期</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/stock/create'
+			},
+			edit: {
+				type: 'PUT',
+				url: '/data/stock/edit'
+			},
+			remove: {
+				type: 'DELETE',
+				url: '/data/stock/remove'
+			}
+		},
+		table: "#example",
+		fields: [
+			{
+				label: "名稱",
+				name: "name"
+			}, {
+				label: "存貨數量",
+				name: "quantity",
+				def: 0
+			}, {
+				label: "供應商",
+				name: "supplier_id",
+				type: "select"
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增原料"
+			},
+			edit: {
+				button: "修改",
+				title: "修改原料"
+			},
+			remove: {
+				button: "刪除"
+			}
+		},
+		idSrc: "id"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/stock",
+			columns: [
+				{ data: "std_id" },
+				{ data: "name" },
+				{ data: "quantity" },
+				{ data: "std_supplier_id" },
+				{ data: "inventory_date" },
+				{ data: "id", visible: false },
+				{ data: "supplier_id", visible: false }
+			],
+			select: true,
+			buttons: [
+				{ extend: "create", editor: editor }, 
+				{ extend: "edit", editor: editor }, 
+				{ extend: "remove", editor: editor }
+			]
+		} );
+	} );
+	
+	$.ajax({
+		type: 'GET',
+		url: '/data/supplier',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push({
+					label: row.std_id + ' (' + row.name + ')',
+					value: row.id
+				});
+			});
+			editor.field('supplier_id').update(options);
+		},
+		error: function() {
+		}
+	});
+</script>

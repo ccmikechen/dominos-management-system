@@ -1,0 +1,147 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>員工編號</th>
+                <th>姓名</th>
+				<th>職位</th>
+                <th>性別</th>
+                <th>生日</th>
+				<th>電話</th>
+				<th>E-mail</th>
+				<th>住址</th>
+				<th>時薪</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/employee/create'
+			},
+			edit: {
+				type: 'PUT',
+				url: '/data/employee/edit'
+			},
+			remove: {
+				type: 'DELETE',
+				url: '/data/employee/remove'
+			}
+		},
+		table: "#example",
+		fields: [
+			{
+				label: "姓名",
+				name: "name"
+			}, {
+				label: "性別",
+				name: "gender",
+				type: "radio",
+				options: ["男", "女"],
+				def: "男"
+			}, {
+				label: "職位",
+				name: "position",
+				type: "select",
+				options: ["正職員工", "工讀生", "店長"]
+			}, {
+				label: "生日",
+				name: "birthday",
+				type: "datetime",
+				opts: {
+					yearRange: 50,
+					maxDate: new Date()
+				},
+				def: function() { return new Date(); }
+			}, {
+				label: "電話",
+				name: "phone"
+			}, {
+				label: "E-mail",
+				name: "email"
+			}, {
+				label: "住址",
+				name: "address"
+			}, {
+				label: "時薪",
+				name: "salary"
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增員工"
+			},
+			edit: {
+				button: "修改",
+				title: "修改員工"
+			},
+			remove: {
+				button: "刪除",
+				title: "刪除員工"
+			}
+		},
+		idSrc: "id"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/employee",
+			columns: [
+				{ data: "std_id" },
+				{ data: "name" },
+				{ data: "position" },
+				{ data: "gender" },
+				{ data: "birthday" },
+				{ data: "phone" },
+				{ data: "email" },
+				{ data: "address" },
+				{ data: "salary" },
+				{ data: "id", visible: false }
+			],
+			select: true,
+			buttons: [
+				{ extend: "create", editor: editor }, 
+				{ extend: "edit", editor: editor }, 
+				{ extend: "remove", editor: editor }
+			]
+		} );
+	} );
+	
+	$.ajax({
+		type: 'get',
+		url: '/data/position',
+		dataType: 'json',
+		success: function(data) {
+			var positions = [];
+			data.data.forEach(function(row) {
+				positions.push({
+					label: row.name,
+					value: row.id
+				});
+			});
+			editor.field('position').update(positions);
+		},
+		error: function() {
+		}
+	});
+</script>

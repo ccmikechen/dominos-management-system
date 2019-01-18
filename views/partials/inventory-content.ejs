@@ -1,0 +1,66 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>盤點單號</th>
+                <th>開單日期</th>
+                <th>開單人</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			remove: {
+				type: 'DELETE',
+				url: '/data/inventory/remove'
+			}
+		},
+		idSrc: "id",
+		table: "#example"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/inventory",
+			columns: [
+				{ "data": "link" },
+				{ "data": "date" },
+				{ "data": "employee_id" },
+				{ "data": "std_id", visible: false },
+				{ "data": "id", visible: false }
+			],
+			select: true,
+			buttons: [
+				{
+					text: "新增", 
+					extend: "create", 
+					action: function() {
+						window.location = "/stock/inventory/create";
+					}
+				}, { 
+					text: "修改",
+					extend: "edit", 
+					editor: editor 
+				}, {
+					text: "刪除",
+					extend: "remove",
+					editor: editor
+				}
+			]
+		} );
+	} );
+</script>

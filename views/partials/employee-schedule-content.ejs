@@ -1,0 +1,157 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+<script src="/js/moment.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+        <thead>
+            <tr>
+                <th>員工編號</th>
+                <th>姓名</th>
+                <th>日期</th>
+				<th>開始時間</th>
+				<th>結束時間</th>
+				<th>類型</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/employee/schedule/create'
+			},
+			edit: {
+				type: 'PUT',
+				url: '/data/employee/schedule/edit'
+			},
+			remove: {
+				type: 'DELETE',
+				url: '/data/employee/schedule/remove'
+			}
+		},
+		table: "#example",
+		fields: [
+			{
+				label: "員工編號",
+				name: "employee_id",
+				type: "select"
+			}, {
+				label: "日期",
+				name: "date",
+				type: "datetime",
+				def: function() {
+					return new Date();
+				}
+			}, {
+				label: "開始時間",
+				name: "start_time",
+				type: "select"
+			}, {
+				label: "結束時間",
+				name: "finish_time",
+				type: "select"
+			}, {
+				label: "類型",
+				name: "type",
+				type: "select",
+				options: [
+					"正常", "加班"
+				]
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增排班"
+			},
+			edit: {
+				button: "修改",
+				title: "修改排班"
+			},
+			remove: {
+				button: "刪除",
+				title: "刪除排班"
+			}
+		},
+		idSrc: "id"
+	});
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "Bfrtlp",
+			ajax: "/data/employee/schedule",
+			columns: [
+				{ data: "employee_std_id" },
+				{ data: "name" },
+				{ data: "date" },
+				{ data: "start_time" },
+				{ data: "finish_time" },
+				{ data: "type" },
+				{ data: "id", visible: false },
+				{ data: "employee_id", visible: false }
+			],
+			select: true,
+			buttons: [
+				{ extend: "create", editor: editor }, 
+				{ extend: "edit", editor: editor }, 
+				{ extend: "remove", editor: editor }
+			]
+		} );
+	} );
+	
+	$.ajax({
+		type: 'get',
+		url: '/data/employee',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push({
+					label: row.std_id + ' (' + row.name + ')',
+					value: row.id
+				});
+			});
+			editor.field('employee_id').update(options);
+		},
+		error: function() {
+		}
+	});
+	$.ajax({
+		type: 'get',
+		url: '/data/schedule/time',
+		dataType: 'json',
+		success: function(data) {
+			var start_time_options = [];
+			var finish_time_otpions = [];
+			data.data.forEach(function(row) {
+				start_time_options.push({
+					label: row.start_time,
+					value: row.id
+				});
+				finish_time_otpions.push({
+					label: row.finish_time,
+					value: row.id				
+				});
+			});
+			editor.field('start_time').update(start_time_options);
+			editor.field('finish_time').update(finish_time_otpions);
+		},
+		error: function() {
+		}
+	});
+</script>

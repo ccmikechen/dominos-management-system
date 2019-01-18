@@ -1,0 +1,193 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+		<div>
+			<label>
+				訂單編號：<input type="text" id="order-id" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				客戶編號：<input type="text" id="customer-id" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				接單員　：<input type="text" id="employee-id" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				總金額　：<input type="text" id="total" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				訂購時間：<input type="text" id="order-time" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				預約時間：<input type="text" id="reservation-time" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				處理狀態：<input type="text" id="status" disabled></input>
+			</label>
+		</div>
+		<hr>
+        <thead>
+            <tr>
+                <th>商品編號</th>
+                <th>商品名稱</th>
+                <th>商品種類</th>
+                <th>單價</th>
+                <th>數量</th>
+                <th>小計</th>		
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var editor = new $.fn.dataTable.Editor({
+		ajax: {
+			create: {
+				type: 'POST',
+				url: '/data/order/takeout/order/create'
+			},
+			edit: {
+				type: 'PUT',
+				url: '/data/order/takeout/order/edit'
+			},
+			remove: {
+				type: 'DELETE',
+				url: '/data/order/takeout/order/remove'
+			}
+		},
+		table: "#example",
+		fields: [
+			{
+				label: "商品編號",
+				name: "product_id",
+				type: "select"
+			}, {
+				label: "數量",
+				name: "quantity"
+			}, {
+				type: "hidden",
+				name: "order_id"
+			}, {
+				type: "hidden",
+				name: "id"
+			}
+		],
+		i18n: {
+			create: {
+				button: "新增",
+				title: "新增商品"
+			},
+			edit: {
+				button: "修改",
+				title: "修改商品"
+			},
+			remove: {
+				button: "刪除",
+				title: "刪除商品"
+			}
+		},
+		idSrc: "id"
+	});
+
+
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: <% if (isFinished) {%> 
+					"rtlp" 
+				 <% } else {%> 
+					"Brtlp"
+				 <% } %>,
+			ajax: "/data/order/takeout/order?id=<%= id %>",
+			columns: [
+				{ data: 'product_std_id' },
+				{ data: 'name' },
+				{ data: 'type' },
+				{ data: 'price' },
+				{ data: 'quantity'},
+				{ data: 'total' },
+				{ data: 'id', visible: false },
+				{ data: 'product_id', visible: false }
+			],
+			select: true,
+			buttons: [
+				{ extend: "create", editor: editor }, 
+				{ extend: "edit", editor: editor }, 
+				{ extend: "remove", editor: editor },
+				{ 
+					text: "處理完成",
+					action: function(e, dt, node, config) {
+						var id = <%= id %>;
+						$.ajax({
+							type: 'PUT',
+							url: '/data/order/takeout/order/finish',
+							dataType: 'json',
+							data: { id: id },
+							success: function(data) {
+								location.reload();
+							},
+							error: function() {
+							}
+						});
+					}
+				}
+			]
+		} );
+	} );
+	
+	$.ajax({
+		type: 'GET',
+		url: '/data/order/takeout/order/info',
+		data: { id: <%= id %> },
+		dataType: 'json',
+		success: function(json) {
+			var data = json.data[0];
+			
+			$('#order-id').val(data.order_std_id);
+			$('#customer-id').val(data.customer_std_id);
+			$('#employee-id').val(data.employee_std_id);
+			$('#total').val(data.total);
+			$('#order-time').val(data.order_time);
+			$('#reservation-time').val(data.reservation_time);
+			$('#status').val(data.status);
+		},
+		error: function() {
+		}
+	});
+	$.ajax({
+		type: 'GET',
+		url: '/data/product',
+		dataType: 'json',
+		success: function(data) {
+			var options = [];
+			data.data.forEach(function(row) {
+				options.push({
+					label: row.std_id + ' (' + row.name + ')',
+					value: row.id
+				});
+			});
+			editor.field('product_id').update(options);
+		},
+		error: function() {
+		}
+	});
+</script>

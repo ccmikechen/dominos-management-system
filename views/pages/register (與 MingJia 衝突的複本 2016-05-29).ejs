@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>達美樂分店管理系統</title>
+<link rel="stylesheet" href="/css/login.css">
+</head>
+
+<body style="background-color: #EEEEEE">
+<div class="wrap" style="margin-top: 84.5px">
+	<div class="loginWrap">
+		<h1 class="logo"></h1>
+		<div class="loginWrapInner">
+			<div class="loginForm">
+				<form action="/auth/register" method="post">
+					<div class="input-zone">
+						<input type="text" id="username" placeholder="帳號"></input>
+					</div>
+					<div class="input-zone" style="margin-top: 6px">
+						<input type="password" id="password" placeholder="密碼"></input>
+					</div>
+					<div class="submit-zone" style="margin-top: 20px">
+						<input type="submit" class="submit-btn" value="註冊確認"></input>
+					</div>
+				</form>
+			</div>
+			<div class="optionForm">
+				<div style="width: 100%; text-align: left; margin-left: 10px;">
+					<h5 style="color: red"><%= errorMessage %></h5>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+</html>

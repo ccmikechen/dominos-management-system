@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css">
+<link rel="stylesheet" href="/css/editor.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+<script src="/js/dataTables.editor.min.js"></script>
+
+<table id="example" class="display" cellspacing="0" width="100%">
+		<h2><%= title %></h2>
+		<hr>
+		<div>
+			<label>
+				單號　　：<input type="text" id="order-id" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				開單日期：<input type="text" id="order-date" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				開單人　：<input type="text" id="order-emp" disabled></input>
+			</label>
+		</div>
+		<div>
+			<label>
+				總金額　：<input type="text" id="order-total" disabled></input>
+			</label>
+		</div>
+		<hr>
+        <thead>
+            <tr>
+                <th>貨品編號</th>
+                <th>貨品名稱</th>
+                <th>進貨數量</th>
+				<th>單價</th>
+				<th>小計</th>
+            </tr>
+        </thead>
+    </table>
+
+<script>
+	var datatable;
+	$(document).ready(function() {
+		datatable = $('#example').DataTable( {
+			dom: "rtp",
+			ajax: "/data/purchase/order?id=<%= id %>",
+			columns: [
+				{ data: 'stock_std_id' },
+				{ data: 'name' },
+				{ data: 'quantity'},
+				{ data: 'price' },
+				{ data: 'total' }
+			],
+			select: true
+		} );
+	} );
+	
+	$.ajax({
+		type: 'GET',
+		url: '/data/purchase/order/info',
+		data: { id: <%= id %> },
+		dataType: 'json',
+		success: function(json) {
+			var data = json.data[0];
+			$('#order-id').val(data.std_id);
+			$('#order-date').val(data.date);
+			$('#order-emp').val(data.employee_id);
+			$('#order-total').val(data.total);
+		},
+		error: function() {
+		}
+	});
+</script>
